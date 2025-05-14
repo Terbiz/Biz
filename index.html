@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universo Procedurale 3D - Costellazione Interattiva</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden; /* Nasconde scrollbar */
+            background-color: #000000;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Font più moderno */
+        }
+        canvas {
+            display: block; /* Rimuove spazio sotto il canvas */
+        }
+        /* Info box per nome pianeta (hover) */
+        #planet-info {
+            position: absolute; /* Posizionamento relativo al body */
+            background-color: rgba(0, 0, 0, 0.75);
+            color: #E0E8FF; /* Colore testo simile a numeri orologio */
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 14px;
+            display: none; /* Nascosto inizialmente */
+            pointer-events: none; /* Non interferisce con il mouse */
+            white-space: nowrap; /* Evita che il testo vada a capo */
+            z-index: 100; /* Sopra il canvas */
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Bordo sottile */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); /* Ombra leggera */
+        }
+         /* Stili per il pannello informazioni dettagliato */
+        #info-panel-detailed {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 280px;
+            background-color: rgba(10, 20, 40, 0.85); /* Blu scuro trasparente */
+            color: #E0E8FF;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none; /* Nascosto inizialmente */
+            z-index: 101; /* Sopra le istruzioni e info hover */
+            border: 1px solid rgba(100, 150, 255, 0.5);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        #info-panel-detailed h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #FFF;
+            font-size: 18px;
+            border-bottom: 1px solid rgba(100, 150, 255, 0.3);
+            padding-bottom: 5px;
+        }
+        #info-panel-detailed p {
+            margin: 8px 0;
+            line-height: 1.4;
+        }
+        #info-panel-detailed strong {
+            color: #a8c8ff; /* Blu più chiaro per etichette */
+            min-width: 80px;
+            display: inline-block;
+        }
+        #info-panel-detailed .fun-fact {
+            margin-top: 15px;
+            font-style: italic;
+            font-size: 13px;
+            border-top: 1px dashed rgba(100, 150, 255, 0.2);
+            padding-top: 10px;
+            color: #b0c0e0;
+        }
+        #panel-controls {
+            margin-top: 15px;
+            text-align: right;
+        }
+         #panel-controls button {
+            background-color: rgba(100, 150, 255, 0.7);
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-left: 10px;
+            transition: background-color 0.2s ease;
+        }
+        #panel-controls button:hover {
+            background-color: rgba(120, 170, 255, 0.9);
+        }
+        #close-button {
+             background-color: rgba(255, 100, 100, 0.7);
+        }
+         #close-button:hover {
+             background-color: rgba(255, 120, 120, 0.9);
+        }
+        /* Istruzioni in basso */
+        #instructions {
+            position: absolute;
+            bottom: 15px; /* Leggermente più in basso */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 13px; /* Leggermente più piccolo */
+            text-align: center;
+            max-width: 90%; /* Limita larghezza su schermi piccoli */
+            z-index: 100;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Contenitore per le informazioni sul pianeta puntato (hover) -->
+    <div id="planet-info">Oggetto: ...</div>
+
+    <!-- Pannello Informazioni Dettagliato (Click) -->
+    <div id="info-panel-detailed">
+        <h3 id="panel-planet-name">Nome Pianeta</h3>
+        <p><strong>Distanza:</strong> <span id="panel-planet-distance">...</span></p>
+        <p><strong>Raggio:</strong> <span id="panel-planet-radius">...</span></p>
+        <p class="fun-fact" id="panel-planet-funfact">Curiosità...</p>
+        <div id="panel-controls">
+            <button id="center-button">Centra Vista</button>
+            <button id="close-button">Chiudi</button>
+        </div>
+    </div>
+
+    <!-- Istruzioni per l'utente -->
+    <div id="instructions">
+        Clicca sui pianeti
+    </div>
+
+    <!-- Librerie Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- Dipendenze per TextGeometry -->
+    <script> var FONT_LOADED = null; </script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FontLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/geometries/TextGeometry.js"></script>
+
+    <!-- Script Logica Applicazione -->
+    <script src="stars.js"></script>
+    <script src="cosmicClock.js"></script>
+    <script src="lunarModule.js"></script>
+    <script src="uiManager.js"></script>
+    <script src="eventManager.js"></script>
+    <script src="constellationText.js"></script> <!-- Inclusione corretta -->
+    <script src="main.js"></script>
+
+    <!-- Script per caricare il font -->
+    <script>
+        const fontLoader = new THREE.FontLoader();
+        fontLoader.load(
+            'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/fonts/helvetiker_regular.typeface.json',
+            function (font) { // Successo
+                FONT_LOADED = font;
+                console.log("Font Helvetiker Regular caricato:", FONT_LOADED);
+
+                // Tenta di aggiungere numeri orologio (se orologio già creato)
+                if (typeof clockGroup !== 'undefined' && clockGroup && FONT_LOADED && typeof addRomanNumeralsToClock === 'function') {
+                    let numeralsExist = false;
+                    clockGroup.children.forEach(child => {
+                        if (child.userData && child.userData.isRomanNumeralContainer) { numeralsExist = true; }
+                    });
+                    if (!numeralsExist) { addRomanNumeralsToClock(clockGroup, FONT_LOADED); }
+                }
+
+                // Crea il testo costellazione
+                if (typeof createConstellationText === 'function' && typeof scene !== 'undefined') {
+                    // La funzione ora ritorna l'oggetto punti, ma non è necessario catturarlo qui
+                    // perché constellationText.js salva i riferimenti internamente.
+                    createConstellationText(FONT_LOADED, scene);
+                } else {
+                    console.warn("Impossibile creare ConstellationText: funzione o scena globale mancante.");
+                }
+            },
+            undefined, // Progresso
+            function (error) { console.error('Errore caricamento font:', error); } // Errore
+        );
+    </script>
+</body>
+</html>
